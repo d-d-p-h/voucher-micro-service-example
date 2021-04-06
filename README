@@ -12,8 +12,29 @@ I. Introduce
             * To retry get voucher code in case timeout/service exception
         - vprovider:
             * To generate/regenerate voucher code and simulate timeout api call
+    2. Project structure:
+        voucher-micro-service-example
+            |______README
+            |______LICENSE
+            |______doc
+            |       |______SETUP
+            |       |______TESTING
+            |       |______simple-solution-diagram
+            |------source
+            |       |______vhandler
+            |       |           |______pom.xml
+            |       |           |______scr
+            |       |           |       |______main
+            |       |           |               |______java
+            |       |           |               |______resource
+            |       |______vprovider
+            |       |           |______pom.xml
+            |       |           |______scr
+            |       |           |       |______main
+            |       |           |               |______java
+            |       |           |               |______resource
 
-    2. Using lib and framework:
+    3. Using lib and framework:
         - Java 8
         - Spring boot start web
         - Spring data jpa
@@ -22,7 +43,7 @@ I. Introduce
         - H2DB for simple demo
         - Redis (run in docker)
         - Kafka
-    3. Development principles, patterns & practices:
+    4. Development principles, patterns & practices:
         - SOLID
         - Separate entity information to detail information and common information (AbstractEntity)
         - Using default method and generic type for extension (CacheHandlerService, ResponseBody, PaginationResponseDto)
