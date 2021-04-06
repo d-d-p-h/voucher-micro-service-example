@@ -1,0 +1,15 @@
+spring:
+  profiles:
+    active:
+      - dev
+---
+spring:
+  config:
+    active:
+      on-profile: dev
+server:
+  port: 8081
+kafka:
+  address: "localhost:9092"
+  topic:
+    voucher-code: voucher-code

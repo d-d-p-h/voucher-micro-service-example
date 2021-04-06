@@ -1,0 +1,67 @@
+******************************************************************************************
+        IMPORTANT:
+            - Please read doc/SETUP for setup/start/stop guideline
+            - Please read doc/TESTING for detail url, payload, token for testing
+******************************************************************************************
+
+I. Introduce
+    1. In this exercise, I create 2 micro services:
+        - vhandler:
+            * To get one/bulk voucher code
+            * To search full/pagination db for voucher by specification
+            * To retry get voucher code in case timeout/service exception
+        - vprovider:
+            * To generate/regenerate voucher code and simulate timeout api call
+
+    2. Using lib and framework:
+        - Java 8
+        - Spring boot start web
+        - Spring data jpa
+        - Spring data rest
+        - Spring security and Oauth2
+        - H2DB for simple demo
+        - Redis (run in docker)
+        - Kafka
+    3. Development principles, patterns & practices:
+        - SOLID
+        - Separate entity information to detail information and common information (AbstractEntity)
+        - Using default method and generic type for extension (CacheHandlerService, ResponseBody, PaginationResponseDto)
+        - Listener (VoucherCodeEvent)
+II. Diagram:
+    1. I only use one entity to store voucher code and it's history so entity diagram is redundant. Below is table
+    structure for voucher code:
+
+    voucher_hist (
+        id IDENTITY PRIMARY KEY,               // unique id to distinguish difference voucher from the same phone number
+        phone_num VARCHAR (15) NOT NULL,       // phone number in which voucher is generated for
+        voucher_cd VARCHAR (20),               // voucher code
+        voucher_typ VARCHAR (20) NOT NULL ,    // I think it should have difference type so we need this field
+        received_by VARCHAR (5),               // in which way vhandler receives the code (direct call or MQ)
+        creat_by VARCHAR (20),
+        updt_by VARCHAR (20),
+        creat_dt DATE,
+        updt_dt DATE )
+
+    2. Solution diagram (ref to doc/simple-solution-diagram)
+
+    3. Short brief of processing flow:
+    Get voucher flow:
+        - vhandler receives request to generate code
+        - vhandler saves input information to DB, call vprovider to get voucher
+        - vprovider receives the get voucher request -> generate request, push to Kafka and return code for vhandler
+            - Success case: return within 30s -> vhandler updates code to DB and return code
+            - Fail case:
+                    - Timeout case:
+                        - return "The request is being processed within 30 seconds"
+                    - Other error:
+                        - vhandler pushes request info to Redis (RetryCacheServiceImpl) to retry later
+                        - return error message
+
+    Retry generate voucher flow:
+        - vhandler's cron job runs and bulks generating voucher code for request information in Redis (RetryCacheServiceImpl)
+        - vprovider receives bulk call -> publish event for generate voucher code then push all code to Kafka
+
+    Update voucher code from Kafka flow:
+        - Kafka consumer receives messages contain request information with corresponding voucher code -> push to
+            Redis (SmsCacheServiceImpl)
+        - vhandler's cron job runs to update voucher code for requests in Redis (SmsCacheServiceImpl) and send sms

@@ -1,0 +1,79 @@
+I. GENERAL
+    1. All APIs in vhandler are secured exclude get voucher code and http://localhost:8080/h2-console
+
+    2. To check DB data (for updated data by cron job, voucher code getting from Kafka,...) please follow below step:
+        - open your favorite browser and go to http://localhost:8080/h2-console
+        - login with username = sa / password = password
+
+    3. To get access token, please execute the following command in ternimal
+
+        curl --request POST \
+          --url https://dev-b-vad9yy.jp.auth0.com/oauth/token \
+          --header 'content-type: application/json' \
+          --data '{"client_id":"aRYo2LaH63raIjnfk25PX3Q1h2YaRV8N","client_secret":"TVRZ_vW9Uf9JGDGNKTwajGo8GHf8nRikfmVOFDq_PZzdVYznX8MruP7pHTzPywVQ","audience":"https://dev-b-vad9yy.jp.auth0.com/api/v2/","grant_type":"client_credentials"}'
+
+    4. Please use postman for testing. In postman, after getting access token, please go to authorization tab then:
+        - set "Type" = Oauth2.0
+        - set "Add authorization data to" = request Headers
+        - past access token to "Access Token"
+
+II. TESTING
+    1. Generate new code (no need access token)
+        - method: GET
+        - url: http://localhost:8080/api/voucher/code
+        - params:
+            pno: phone number, should be a random number with 10 numeric
+            typ: typ of voucher, length < 20
+        - expected response:
+            * success: return voucher code
+            * fail:
+                case timeout: return "The request is being processed within 30 seconds"
+                other case: error message
+
+    2. Generate bulk voucher code
+        - method: POST
+        - url: http://localhost:8080/api/voucher/bulkgen
+        - body: list of VoucherHistoryDto as follow example:
+            [
+                {phoneNum":"0909111111","voucherType":"typ1"},
+                {phoneNum":"0909222222","voucherType":"typ2"}
+            ]
+        - expected response:
+            * success: return "success"
+            * fail: error message
+
+    3. Find all voucher history
+        - method: POST
+        - url: http://localhost:8080/api/voucher/filter
+
+        - body: empty
+        - expected response:
+            * success: full data from voucher history table
+            * fail: error message
+
+        - body: list of criterion as below
+            {
+                "phoneNumber": "0909123456",
+                "voucherType": "typ1"
+            }
+        - expected response:
+            * success: full data from voucher history table match body condition
+            * fail: error message
+
+    4. Find all voucher history with pagination
+        - method: POST
+            - url: http://localhost:8080/api/voucher/filter/paging
+
+            - body: empty
+            - expected response: error message
+
+            - body: list of criterion as below example
+                {
+                    "phoneNumber": "0909123456",
+                    "voucherType": "typ1",
+                    "pageNum": 1,
+                    "pageSize": 10
+                }
+            - expected response:
+                * success: data which matches body condition
+                * fail: error message

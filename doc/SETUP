@@ -1,0 +1,44 @@
+I. SETUP AND START SERVICES
+1. Setup docker
+    - Download docker for desktop from https://hub.docker.com/editions/community/docker-ce-desktop-mac/
+    - Install and start docker
+2. Setup Redis
+    - Open terminal and run below command to pull & start Redis
+        docker pull redis
+        docker run -d -p 6379:6379 --name my-redis redis
+    - Please execute "docker ps" to check if redis is start success with port 6379
+3. Setup Kafka
+    - Download Kafka from https://www.apache.org/dyn/closer.cgi?path=/kafka/2.7.0/kafka_2.13-2.7.0.tgz (it's faster to
+    download and setup local Kafka in compare with using Kafka Confluent Platform in docker)
+    - Open new terminal window and change directory to folder that Kafka was downloaded and execute below command:
+        tar -xzf kafka_2.13-2.7.0.tgz
+        cd kafka_2.13-2.7.0
+    - Start zookeeper:
+        bin/zookeeper-server-start.sh config/zookeeper.properties
+    - Open another terminal and change directory to the same with previous terminal then start broker:
+        bin/kafka-server-start.sh config/server.properties
+4. Build and start vprovider service
+    - Change directory to vprovider then run below command
+        mvn clean install
+        mvn spring-boot:start
+    - You should see similar log in started success
+        INFO 77802 --- [           main] o.a.kafka.common.utils.AppInfoParser     : Kafka version: 2.6.0
+        INFO 77802 --- [           main] o.a.kafka.common.utils.AppInfoParser     : Kafka commitId: 62abe01bee039651
+        INFO 77802 --- [           main] o.a.kafka.common.utils.AppInfoParser     : Kafka startTimeMs: 1617635666024
+        INFO 77802 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8081 (http) with context path ''
+        INFO 77802 --- [           main] c.e.vprovider.VproviderApplication       : Started VproviderApplication in 4.627 seconds (JVM running for 5.553)
+
+5. Build and start vhandler service
+    - Change directory to vprovider then run below command
+            mvn clean install
+            mvn spring-boot:start
+
+II. STOP SERVICE AND CLEANUP
+1. Please stop all services by following order:
+    - vhandler service
+    - vprovider service
+    - broker
+    - zookeeper
+    - redis
+2. Then clean up log file for Kafka by below command:
+    rm -rvf /tmp/kafka-logs /tmp/zookeeper

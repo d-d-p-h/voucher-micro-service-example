@@ -1,0 +1,94 @@
+spring:
+  profiles:
+    active:
+      - dev
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:h2:mem:vhandler
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+  h2:
+    console:
+      enabled: true
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://${auth0.domain}/
+  redis:
+    host: localhost
+    port: 6379
+auth0:
+  audience: https://dev-b-vad9yy.jp.auth0.com/api/v2/
+  domain: dev-b-vad9yy.jp.auth0.com
+server:
+  port: 8080
+api:
+  voucher:
+    provider:
+      url: http://localhost:8081/
+      end-point:
+        generate: api/vprovider/generate
+        generate-bulk: api/vprovider/generate/bulk
+kafka:
+  address: "localhost:9092"
+  topic:
+    voucher-code: voucher-code
+  group:
+    voucher-code: vcode-group
+---
+spring:
+  config:
+    activate:
+      on-profile: prd
+  datasource:
+    url: jdbc:h2:mem:vhandler
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+  h2:
+    console:
+      enabled: true
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://${auth0.domain}/
+  redis:
+    host: localhost
+    port: 6379
+auth0:
+  audience: https://dev-b-vad9yy.jp.auth0.com/api/v2/
+  domain: dev-b-vad9yy.jp.auth0.com
+server:
+  port: 8080
+kafka:
+  address: "localhost:9092"
+  topic:
+    voucher-code: voucher-code
+  group:
+    voucher-code: vcode-group
+api:
+  voucher:
+    provider:
+      url: http://localhost:8081/
+      end-point:
+        generate: api/vprovider/generate
+        generate-bulk: api/vprovider/generate/bulk
